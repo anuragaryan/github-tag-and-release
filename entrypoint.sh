@@ -99,7 +99,7 @@ git_ref_posted=$( echo "${git_refs_response}" | jq .ref | tr -d '"' )
 
 echo "::debug::${git_refs_response}"
 if [ "${git_ref_posted}" = "refs/tags/${new_tag}" ]; then
-  exit 0
+  echo "New Tag Created"
 else
   echo "::error::Tag was not created properly."
   exit 1
@@ -107,11 +107,11 @@ fi
 
 # Release
 
-git_refs_url=$(jq .repository.git_refs_url $GITHUB_EVENT_PATH | tr -d '"' | sed 's/{\/releases}//g')
-echo $git_refs_url
+git_releases_url=$(jq .repository.releases_url $GITHUB_EVENT_PATH | tr -d '"' | sed 's/{\/id}//g')
+echo $git_releases_url
 
 git_release_response=$(
-curl -s -X POST $git_refs_url \
+curl -s -X POST $git_releases_url \
 -H "Authorization: token $GITHUB_TOKEN" \
 -d @- << EOF
 
