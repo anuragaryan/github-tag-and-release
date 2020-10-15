@@ -1,0 +1,6 @@
+name: 'Github Create Tag'
+description: 'Github Action to create Tag'
+author: 'Anurag Aryan'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'

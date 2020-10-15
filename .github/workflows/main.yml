@@ -1,0 +1,16 @@
+name: Create and Push Tag
+on:
+  push:
+    branches:
+      - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+      with:
+        fetch-depth: '0'
+    - name: Create and push tag
+      uses: anuragaryan/github-create-tag@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
