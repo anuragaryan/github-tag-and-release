@@ -14,14 +14,14 @@ echo "*** CONFIGURATION ***"
 echo -e "\tRELEASE_BRANCHES: ${release_branches}"
 echo -e "\tSOURCE: ${source}"
 echo -e "\tTAG_CONTEXT: ${tag_context}"
-echo -e "\PREFIX: ${prefix}"
+echo -e "\tPREFIX: ${prefix}"
 
 current_branch=$(git rev-parse --abbrev-ref HEAD)
 
 pre_release="true"
 IFS=',' read -ra branch <<< "$release_branches"
 for b in "${branch[@]}"; do
-    echo "Is $b a match for ${current_branch}"
+    # If b is not a match for current_branch
     if [[ ! "${current_branch}" =~ $b ]]
     then
         echo "wrong branch, can only create tag for $release_branches"
@@ -58,19 +58,17 @@ else
 
     # get current commit hash for last tag
     tag_commit=$(git rev-list -n 1 $tag)
-
-    # get current commit hash
-    commit=$(git rev-parse HEAD)
-
-    if [ "$tag_commit" == "$commit" ]; then
-        echo "No new commits since previous tag. Skipping..."
-        echo ::set-output name=tag::$tag
-        exit 0
-    fi
 fi
 
 echo $log
-echo ::set-output name=tag::$new_tag
+
+# get current commit hash
+commit=$(git rev-parse HEAD)
+
+if [ ! -z "$tag_commit" && "$tag_commit" == "$commit" ]; then
+    echo "No new commits since previous tag. Skipping..."
+    exit 0
+fi
 
 # create local git tag
 git tag $new_tag
