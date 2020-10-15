@@ -6,7 +6,7 @@ set -o pipefail
 release_branches=${RELEASE_BRANCHES:-master}
 source=${SOURCE:-.}
 tag_context=${TAG_CONTEXT:-repo}
-prefix=${PREFIX:-CART}
+prefix=${PREFIX:-APP}
 
 cd ${GITHUB_WORKSPACE}/${source}
 
@@ -55,23 +55,21 @@ else
     release=${tag##*.}
     release=$((release+1)) # increment the release number
     new_tag="$tag_prefix.$release"
-fi
 
-# get current commit hash for tag
-tag_commit=$(git rev-list -n 1 $tag)
+    # get current commit hash for last tag
+    tag_commit=$(git rev-list -n 1 $tag)
 
-# get current commit hash
-commit=$(git rev-parse HEAD)
+    # get current commit hash
+    commit=$(git rev-parse HEAD)
 
-if [ "$tag_commit" == "$commit" ]; then
-    echo "No new commits since previous tag. Skipping..."
-    echo ::set-output name=tag::$tag
-    exit 0
+    if [ "$tag_commit" == "$commit" ]; then
+        echo "No new commits since previous tag. Skipping..."
+        echo ::set-output name=tag::$tag
+        exit 0
+    fi
 fi
 
 echo $log
-
-
 echo ::set-output name=tag::$new_tag
 
 # create local git tag
@@ -99,7 +97,7 @@ EOF
 git_ref_posted=$( echo "${git_refs_response}" | jq .ref | tr -d '"' )
 
 echo "::debug::${git_refs_response}"
-if [ "${git_ref_posted}" = "refs/tags/${new}" ]; then
+if [ "${git_ref_posted}" = "refs/tags/${new_tag}" ]; then
   exit 0
 else
   echo "::error::Tag was not created properly."
