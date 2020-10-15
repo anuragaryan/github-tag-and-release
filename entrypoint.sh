@@ -78,7 +78,10 @@ dt=$(date '+%Y-%m-%dT%H:%M:%SZ')
 full_name=$GITHUB_REPOSITORY
 git_refs_url=$(jq .repository.git_refs_url $GITHUB_EVENT_PATH | tr -d '"' | sed 's/{\/sha}//g')
 
+echo $git_refs_url
 echo "$dt: **pushing tag $new_tag to repo $full_name"
+
+# Tag
 
 git_refs_response=$(
 curl -s -X POST $git_refs_url \
@@ -102,3 +105,30 @@ else
   exit 1
 fi
 
+# Release
+
+git_refs_url=$(jq .repository.git_refs_url $GITHUB_EVENT_PATH | tr -d '"' | sed 's/{\/releases}//g')
+echo $git_refs_url
+
+git_release_response=$(
+curl -s -X POST $git_refs_url \
+-H "Authorization: token $GITHUB_TOKEN" \
+-d @- << EOF
+
+{
+    "tag_name": "$new_tag",
+    "target_commitish": "master",
+    "name": "$new_tag",
+    "body": "$log",
+    "draft": false,
+    "prerelease": false
+}
+EOF
+)
+
+release_id="$(echo "${git_release_response}" | jq -r '.id')"
+release_url="$(echo "${git_release_response}" | jq -r '.html_url')"
+
+[[ "null" == "${release_id}" ]] && error "$(echo "${response}" | jq -c '{message:.message, errors:.errors}')"
+
+echo "* GitHub release #${release_id} URL - ${release_url}" 1>&2
