@@ -65,7 +65,7 @@ echo $log
 # get current commit hash
 commit=$(git rev-parse HEAD)
 
-if [ ! -z "$tag_commit" && "$tag_commit" == "$commit" ]; then
+if [ "$tag_commit" == "$commit" ]; then
     echo "No new commits since previous tag. Skipping..."
     exit 0
 fi
