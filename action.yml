@@ -1,5 +1,5 @@
-name: 'Github Create Tag'
-description: 'Github Action to create Tag'
+name: 'Github Tag and Release'
+description: 'Github action to create Tag and make a Release'
 author: 'Anurag Aryan'
 runs:
   using: 'docker'
